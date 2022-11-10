@@ -1,4 +1,3 @@
-
 Добавляем 4 диск
 apt-cdrom add 
 nano /etc/ssh/sshd_config 
@@ -47,10 +46,6 @@ WEB-L  и  WEB-R
 apt install mc nginx openssh-server lynx cifs-utils
 nano /etc/systemd/timesyncd.conf
 
-
-
-
-
 SRV и CLI
 ip 192.168.100.200
 subnet 255.255.255.0
@@ -79,18 +74,38 @@ WEB-L и WEB-R
 systemctl restart sshd, times...
 Идем в cmd
 cd \
-scp web.pfx root@web-l:~
-scp ca.cer root@web-l:~
+scp web.pfx root@web-l:~ P@ssw0rd, (toor)
+scp ca.cer root@web-l:~ P@ssw0rd, (toor)
 
 WEB-L
-openssl pkcs12 -in web.pfx -nokeys -out cert.pem
-openssl pkcs12 -in web.pfx -nocerts -out key.pem
-openssl rsa -in key.pem -out key.pem
+openssl pkcs12 -in web.pfx -nokeys -out cert.pem (P@ssw0rd)
+openssl pkcs12 -in web.pfx -nocerts -out key.pem (P@ssw0rd)
+openssl rsa -in key.pem -out key.pem (P@ssw0rd) 
 cp *. pem /etc/nginx/
-scp*. pem root@web-r: /etc/nginx
-nano /etc/nginx/sites-available/default
+scp*. pem root@web-r:/etc/nginx (toor)
+
+WEB-L; WEB-R
+nano /etc/nginx/sites-available/default 
+server {
+listen 80;
+server_name www.demo.wsr;
+return 301 https://$server_name$request_uri;
+}
+upstream backend {
+server 192.168.100.100:5000 fail_timeout=43s;
+server 172.16.100.100:5000 fail_timeout=43s;
+}
+server {
+listen 443 ssl;
+ssl_certificate /etc/nginx/cert.pem;
+ssl_certificate_key /etc/nginx/key.pem;
+server_name www.demo.wsr;
+location / {
+	proxy_pass http://backend;
+}
+}
 systemctl restart nginx.service (WEB-L; WEB-R)
 
 WEB-L; WEB-R
-docker image load -i /opt/appdockers0.zip
-docker run -d --restart always appdocker0:latest
+docker image load -i /opt/appdocker0.zip
+docker run -d --restart always –p 5000:5000 appdocker0:latest 
